@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Control LED ESP32 - HiveMQ Cloud</title>
+  <!-- MQTT.js desde CDN -->
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+  <style>
+    :root {
+      --bg: #0B2C4D;
+      --on: #16a34a;
+      --off: #b91c1c;
+      --btn: #1e3a8a;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+    }
+    body{
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      text-align: center;
+      padding: 48px 16px 32px;
+    }
+    h1{ margin-bottom: 24px; }
+    .panel{
+      max-width: 560px;
+      margin: 0 auto;
+      background: rgba(255,255,255,.06);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.2);
+    }
+    button{
+      padding: 14px 26px;
+      font-size: 18px;
+      margin: 10px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      color: #fff;
+      transition: transform .05s ease;
+    }
+    button:active { transform: translateY(1px) }
+    .btn-on  { background: var(--on); }
+    .btn-off { background: var(--off); }
+    .row { margin-top: 8px; }
+    .status{
+      margin-top: 10px;
+      font-size: 16px;
+      color: var(--muted);
+    }
+    .status b{ color: #fff; }
+    .led-indicator{
+      width: 60px; height: 60px;
+      border-radius: 50%;
+      margin: 18px auto 8px;
+      background: #c81e1e; /* rojo (apagado) */
+      box-shadow: 0 0 18px #c81e1e;
+      transition: all .2s ease-in-out;
+      border: 2px solid rgba(255,255,255,.25);
+    }
+    .led-on{
+      background: #22c55e !important;
+      box-shadow: 0 0 22px #22c55e !important;
+    }
+    .footer{
+      margin-top: 18px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    a { color: #93c5fd; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+  <h1>Control LED ESP32</h1>
+  <div class="panel">
+    <div class="row">
+      <button class="btn-on"  onclick="encender()">Encender</button>
+      <button class="btn-off" onclick="apagar()">Apagar</button>
+    </div>
+
+    <div class="led-indicator" id="led"></div>
+
+    <div class="status">Conexión: <b id="conn">Desconectado</b></div>
+    <div class="status">Estado LED (desde ESP32): <b id="estado">N/D</b></div>
+    <div class="status">Topic control: <code>ivan/esp32/led</code></div>
+    <div class="status">Topic estado: <code>ivan/esp32/estado</code></div>
+  </div>
+
+  <div class="footer">
+    MQTT sobre WebSockets (TLS) usando <a href="https://github.com/mqttjs/MQTT.js" target="_blank" rel="noreferrer">MQTT.js</a> · HiveMQ Cloud · Ejemplo educativo
+  </div>
+
+  <script>
+    // ===================== CONFIG MQTT (HiveMQ Cloud) =====================
+    // Tu instancia: 3759e2...s1.eu.hivemq.cloud   (TLS TCP=8883 / WSS=8884)
+    const brokerUrl = "wss://3759e23402c4448584ca5389cdd951e9.s1.eu.hivemq.cloud:8884/mqtt";
+
+    // Credenciales del sketch:
+    const options = {
+      clientId: "webclient-" + Math.random().toString(16).slice(2),
+      username: "IvanMulia",
+      password: "Musiol1980",
+      clean: true,
+      reconnectPeriod: 1500,
+      connectTimeout: 30_000,
+    };
+
+    // Topics del sketch:
+    const TOPIC_CTRL = "ivan/esp32/led";     // Web -> ESP32:  "ON"/"OFF"
+    const TOPIC_STAT = "ivan/esp32/estado";  // ESP32 -> Web:  "ON"/"OFF"
+    // =====================================================================
+
+    const elConn   = document.getElementById("conn");
+    const elEstado = document.getElementById("estado");
+    const elLed    = document.getElementById("led");
+
+    if (!window.mqtt) {
+      elConn.textContent = "Librería MQTT no cargó";
+      throw new Error("mqtt.min.js no disponible");
+    }
+
+    const client = mqtt.connect(brokerUrl, options);
+
+    client.on("connect", () => {
+      elConn.textContent = "Conectado ✅";
+      // Suscribirse al estado que publica el ESP32 después de cada acción:
+      client.subscribe(TOPIC_STAT, { qos: 1 }, (err) => {
+        if (err) console.error("Error al suscribir:", err);
+      });
+    });
+
+    client.on("reconnect", () => {
+      elConn.textContent = "Reconectando…";
+    });
+
+    client.on("close", () => {
+      elConn.textContent = "Desconectado";
+    });
+
+    client.on("error", (err) => {
+      elConn.textContent = "Error ❌";
+      console.error(err);
+    });
+
+    client.on("message", (topic, payload) => {
+      if (topic === TOPIC_STAT) {
+        const msg = String(payload).trim().toUpperCase();
+        elEstado.textContent = msg || "N/D";
+        if (msg === "ON") {
+          elLed.classList.add("led-on");
+        } else {
+          elLed.classList.remove("led-on");
+        }
+      }
+    });
+
+    // Publicar comandos ON/OFF al topic que escucha el ESP32
+    function encender(){
+      client.publish(TOPIC_CTRL, "ON", { qos: 1, retain: false });
+    }
+    function apagar(){
+      client.publish(TOPIC_CTRL, "OFF", { qos: 1, retain: false });
+    }
+  </script>
+</body>
+</html>
