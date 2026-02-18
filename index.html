@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Control LED ESP32 - HiveMQ Cloud</title>
+  <title>Práctica de clase: ESP32 - MQTT con HiveMQ Cloud</title>
   <!-- MQTT.js desde CDN -->
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
   <style>
@@ -75,7 +75,7 @@
 </head>
 <body>
 
-  <h1>Control LED ESP32</h1>
+  <h1>ESP32 CONTROL MQTT Internet</h1>
   <div class="panel">
     <div class="row">
       <button class="btn-on"  onclick="encender()">Encender</button>
@@ -84,14 +84,14 @@
 
     <div class="led-indicator" id="led"></div>
 
-    <div class="status">Conexión: <b id="conn">Desconectado</b></div>
-    <div class="status">Estado LED (desde ESP32): <b id="estado">N/D</b></div>
+    <div class="status">Estado: <b id="conn">Desconectado</b></div>
+    <div class="status">LED desde ESP32 Oficina: <b id="estado">N/D</b></div>
     <div class="status">Topic control: <code>ivan/esp32/led</code></div>
     <div class="status">Topic estado: <code>ivan/esp32/estado</code></div>
   </div>
 
   <div class="footer">
-    MQTT sobre WebSockets (TLS) usando <a href="https://github.com/mqttjs/MQTT.js" target="_blank" rel="noreferrer">MQTT.js</a> · HiveMQ Cloud · Ejemplo educativo
+    MQTT sobre WebSockets (TLS) usando <a href="https://github.com/mqttjs/MQTT.js" target="_blank" rel="noreferrer">MQTT.js</a> · HiveMQ Cloud · Ejemplo educativo en UMAD
   </div>
 
   <script>
