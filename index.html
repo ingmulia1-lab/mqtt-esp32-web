@@ -1,70 +1,26 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-
-<title>Acceso Torniquete</title>
-
-<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
-<script src="https://unpkg.com/html5-qrcode"></script>
-
+<title>Control de Acceso</title>
+<link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<h2>Escanear QR</h2>
+<h1>Sistema de Acceso Torniquete</h1>
 
-<div id="reader"></div>
+<div class="menu">
 
-<script>
+<a href="registro.html">
+<button>Registrar Usuario</button>
+</a>
 
-const client = mqtt.connect(
-"wss://3759e23402c4448584ca5389cdd951e9.s1.eu.hivemq.cloud:8884/mqtt",
-{
-username:"IvanMulia",
-password:"Musiol1980"
-})
+<a href="acceso.html">
+<button>Escanear QR</button>
+</a>
 
-function abrirTorniquete(){
-
-client.publish("torniquete/control","OPEN")
-
-}
-
-function onScanSuccess(){
-
-let matricula = prompt("Ingrese matrícula")
-
-fetch("http://localhost:3000/validar",{
-
-method:"POST",
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({matricula})
-
-})
-.then(res=>res.json())
-.then(data=>{
-
-if(data.autorizado){
-
-alert("Bienvenido "+data.nombre)
-
-abrirTorniquete()
-
-}else{
-
-alert("Usuario no registrado")
-
-}
-
-})
-
-}
-
-const scanner = new Html5QrcodeScanner("reader",{fps:10,qrbox:250})
-
-scanner.render(onScanSuccess)
-
-</script>
+</div>
 
 </body>
 </html>
