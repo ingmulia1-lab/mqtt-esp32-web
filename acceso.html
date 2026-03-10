@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Acceso Torniquete</title>
+
+<link rel="stylesheet" href="style.css">
+
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+
+</head>
+
+<body>
+
+<h2>Escanear QR para acceso</h2>
+
+<div id="reader"></div>
+
+<br>
+
+<input id="matricula" placeholder="Ingrese su matrícula">
+
+<br><br>
+
+<button onclick="validar()">Validar Acceso</button>
+
+<script>
+
+// conexión MQTT
+
+const BROKER_URL = "wss://3759e23402c4448584ca5389cdd951e9.s1.eu.hivemq.cloud:8884/mqtt"
+
+const MQTT_USER = "IvanMulia"
+const MQTT_PASS = "Musiol1980"
+
+const client = mqtt.connect(BROKER_URL,{
+
+username:MQTT_USER,
+password:MQTT_PASS
+
+})
+
+function abrirTorniquete(){
+
+client.publish("torniquete/control","OPEN")
+
+alert("Torniquete abierto")
+
+}
+
+// validar usuario
+
+function validar(){
+
+const matricula = document.getElementById("matricula").value
+
+fetch("http://localhost:3000/validar",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({matricula})
+
+})
+.then(res=>res.json())
+.then(data=>{
+
+if(data.autorizado){
+
+alert("Bienvenido "+data.nombre)
+
+abrirTorniquete()
+
+}else{
+
+alert("Usuario no registrado")
+
+}
+
+})
+
+}
+
+// escaneo QR
+
+function onScanSuccess(decodedText){
+
+console.log("QR detectado:",decodedText)
+
+alert("QR detectado, ingrese matrícula")
+
+}
+
+const scanner = new Html5QrcodeScanner(
+"reader",
+{
+fps:10,
+qrbox:250
+})
+
+scanner.render(onScanSuccess)
+
+</script>
+
+</body>
+
+</html>
