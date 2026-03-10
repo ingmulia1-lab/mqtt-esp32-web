@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Registro de Usuario</title>
+<link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+<h2>Registro de Usuario</h2>
+
+<input id="nombre" placeholder="Nombre">
+<br><br>
+
+<input id="matricula" placeholder="Matrícula">
+<br><br>
+
+<button onclick="registrar()">Registrar</button>
+
+<script>
+
+function registrar(){
+
+const nombre = document.getElementById("nombre").value
+const matricula = document.getElementById("matricula").value
+
+fetch("http://localhost:3000/registro",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+nombre:nombre,
+matricula:matricula
+})
+
+})
+.then(res=>res.text())
+.then(data=>{
+
+alert(data)
+
+})
+
+}
+
+</script>
+
+</body>
+</html>
